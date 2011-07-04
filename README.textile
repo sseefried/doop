@@ -1,0 +1,10 @@
+h1. Doop
+
+Doop is a Haskell EDSL for writing Hadoop programs.
+
+h2. Origin of its name.
+
+It is common when naming Haskell projects to add the "ha" prefix. e.g. Haddock, HaXML, etc.
+Hadoop already has it, so this time we've removed it.
+
+Perhaps we could name it Laughing Man? (Hahadoop?)
