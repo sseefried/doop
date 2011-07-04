@@ -18,6 +18,7 @@ data Hadoop ki vi ko vo =
 class (Show a, Eq a) => Elt a
 
 instance Elt Int
+instance Elt a => Elt [a]
 
 class (Elt a, Num a) => NumElt a
 
@@ -25,16 +26,18 @@ instance NumElt Int
 
 data Exp a where
   App   :: Show a => Exp (a -> b) -> Exp a -> Exp b
-  Lam       :: (Exp a -> Exp b) -> Exp (a -> b)
+  Lam       :: Lift a => (Exp a -> Exp b) -> Exp (a -> b)
   Add       :: NumElt a => Exp (a, a) -> Exp a
+-- Eq        :: Exp a -> Exp a -> Exp Bool
+-- If       :: Exp Bool -> Exp a -> Exp a -> Exp a
   Mult      :: NumElt a => Exp (a, a) -> Exp a
   Const     :: a -> Exp a
-  List      :: Elt a => [Exp a] -> Exp [a]
+  List      :: Show a => [Exp a] -> Exp [a]
   Head      :: Exp [a] -> Exp a
   Tail      :: Exp [a] -> Exp [a]
   Tuple     :: (Elt a, Elt b) => (Exp a, Exp b) -> Exp (a,b)
-  Fst       :: Elt b => Exp (a,b) -> Exp a
-  Snd       :: Elt a => Exp (a,b) -> Exp b
+  Fst       :: Show b => Exp (a,b) -> Exp a
+  Snd       :: Show a => Exp (a,b) -> Exp b
 
 instance Eq (Exp Int) where
   (==) = error "Eq is not defined on Exp type"
@@ -87,8 +90,9 @@ tl = Tail
 
 eval :: Exp a -> a
 eval (App (Lam fun) arg) = eval (fun arg)
-eval (Add pair)   = let (x,y) = eval pair in x + y
-eval (Mult pair)  = let (x,y) = eval pair in x * y
+eval (Lam fun)     = \x -> eval (fun (lift x)) --        (Exp a -> Exp b) -> (a -> b)
+eval (Add pair)    = uncurry (+) (eval pair)
+eval (Mult pair)   = uncurry (*) (eval pair)
 eval (Const a)     = a
 eval (List xs)     = map eval xs
 eval (Head xs)     = head (eval xs)
